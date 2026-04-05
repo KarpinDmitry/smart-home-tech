@@ -1,6 +1,6 @@
 package ru.yandex.practicum.collector.service;
 
-import ru.yandex.practicum.collector.kafka.producer.KafkaEventProducer;
+import ru.yandex.practicum.collector.kafka.KafkaEventProducer;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.collector.mapper.hub.HubEventHandler;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
