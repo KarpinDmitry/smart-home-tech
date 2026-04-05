@@ -1,13 +1,12 @@
 package ru.yandex.practicum.collector.mapper.sensor;
 
 import org.apache.avro.specific.SpecificRecord;
-import ru.yandex.practicum.grpc.telemetry.event.SensorEvent;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
 import java.time.Instant;
 
-public abstract class BaseSensorEventHandler implements SensorEventHandler{
+public abstract class BaseSensorEventHandler implements SensorEventHandler {
 
     @Override
     public SensorEventAvro handle(SensorEventProto event) {
