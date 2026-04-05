@@ -6,7 +6,7 @@ import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
 
 @Component
-public class LightSensorHandler extends BaseSensorEventHandler{
+public class LightSensorHandler extends BaseSensorEventHandler {
 
     @Override
     public SensorEventProto.PayloadCase getType() {

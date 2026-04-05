@@ -1,8 +1,7 @@
-package ru.yandex.practicum.collector.kafka.producer;
+package ru.yandex.practicum.collector.kafka;
 
 
 import jakarta.annotation.PreDestroy;
-import ru.yandex.practicum.collector.kafka.serializer.KafkaAvroSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -12,6 +11,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import serializer.KafkaAvroSerializer;
 
 import java.util.Properties;
 

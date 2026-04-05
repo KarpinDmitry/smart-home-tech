@@ -30,7 +30,7 @@ public class EventController extends CollectorControllerGrpc.CollectorController
 
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
-        } catch (Exception e){
+        } catch (Exception e) {
             responseObserver.onError(new StatusRuntimeException(
                     Status.INTERNAL
                             .withDescription(e.getLocalizedMessage())
