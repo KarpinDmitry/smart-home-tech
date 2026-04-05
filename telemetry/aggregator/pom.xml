@@ -98,7 +98,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ru.yandex.practicum.aggregator.AggregatorApplication</mainClass>
+                    <mainClass>ru.yandex.practicum.AggregatorApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>
