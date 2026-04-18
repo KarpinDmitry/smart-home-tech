@@ -3,7 +3,6 @@ package ru.yandex.practicum.service;
 import com.google.protobuf.Timestamp;
 import deserializer.SensorsSnapshotDeserializer;
 import io.grpc.StatusRuntimeException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -29,13 +28,16 @@ import java.util.Properties;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class SnapshotProcessor {
 
     private final ScenarioRepository scenarioRepository;
 
     @GrpcClient("hub-router")
     private HubRouterControllerBlockingStub hubRouterClient;
+
+    public SnapshotProcessor(ScenarioRepository scenarioRepository) {
+        this.scenarioRepository = scenarioRepository;
+    }
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
@@ -73,11 +75,11 @@ public class SnapshotProcessor {
         }
     }
 
-    private void processSnapshot(SensorsSnapshotAvro snapshot) {
+    void processSnapshot(SensorsSnapshotAvro snapshot) {
         String hubId = snapshot.getHubId();
         log.debug("Обработка снапшота хаба {}", hubId);
 
-        List<Scenario> scenarios = scenarioRepository.findByHubId(hubId);
+        List<Scenario> scenarios = loadScenariosWhenStable(hubId);
         if (scenarios.isEmpty()) {
             log.debug("Нет сценариев для хаба {}", hubId);
             return;
@@ -93,6 +95,36 @@ public class SnapshotProcessor {
                 log.debug("Условия сценария '{}' не выполнены.", scenario.getName());
             }
         }
+    }
+
+    /**
+     * HubEventProcessor пишет сценарии в БД в другом потоке; между двумя подряд SCENARIO_ADDED
+     * снапшот может прийти раньше, чем зафиксируется второй сценарий. Ждём стабилизации числа сценариев.
+     */
+    private List<Scenario> loadScenariosWhenStable(String hubId) {
+        int lastSize = -1;
+        int stableRounds = 0;
+        List<Scenario> last = List.of();
+        for (int i = 0; i < 25; i++) {
+            List<Scenario> current = scenarioRepository.findByHubId(hubId);
+            if (current.size() == lastSize) {
+                stableRounds++;
+                if (stableRounds >= 2) {
+                    return current;
+                }
+            } else {
+                stableRounds = 0;
+                lastSize = current.size();
+            }
+            last = current;
+            try {
+                Thread.sleep(35);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return last;
+            }
+        }
+        return last;
     }
 
     private boolean checkScenarioConditions(Scenario scenario, SensorsSnapshotAvro snapshot) {
@@ -118,23 +150,60 @@ public class SnapshotProcessor {
     }
 
     private boolean evaluateCondition(Condition condition, Object data) {
+        ConditionTypeAvro type = condition.getType();
         ConditionOperationAvro operation = condition.getOperation();
         Integer expected = condition.getValue();
-        if (expected == null) return false;
-
-        if (data instanceof TemperatureSensorAvro temp) {
-            return compare(temp.getTemperatureC(), expected, operation);
-        } else if (data instanceof ClimateSensorAvro climate) {
-            return compare(climate.getTemperatureC(), expected, operation);
-        } else if (data instanceof LightSensorAvro light) {
-            return compare(light.getLuminosity(), expected, operation);
-        } else if (data instanceof MotionSensorAvro motion) {
-            return motion.getMotion() && expected == 1;
-        } else if (data instanceof SwitchSensorAvro sw) {
-            return sw.getState() == (expected == 1);
+        if (expected == null) {
+            return false;
         }
 
-        return false;
+        return switch (type) {
+            case TEMPERATURE -> {
+                if (data instanceof ClimateSensorAvro c) {
+                    yield compare(c.getTemperatureC(), expected, operation);
+                }
+                if (data instanceof TemperatureSensorAvro t) {
+                    yield compare(t.getTemperatureC(), expected, operation);
+                }
+                yield false;
+            }
+            case HUMIDITY -> {
+                if (data instanceof ClimateSensorAvro c) {
+                    yield compare(c.getHumidity(), expected, operation);
+                }
+                yield false;
+            }
+            case CO2LEVEL -> {
+                if (data instanceof ClimateSensorAvro c) {
+                    yield compare(c.getCo2Level(), expected, operation);
+                }
+                yield false;
+            }
+            case LUMINOSITY -> {
+                if (data instanceof LightSensorAvro light) {
+                    yield compare(light.getLuminosity(), expected, operation);
+                }
+                yield false;
+            }
+            case MOTION -> evaluateMotion(condition, data, expected, operation);
+            case SWITCH -> evaluateSwitch(condition, data, expected, operation);
+        };
+    }
+
+    private boolean evaluateMotion(Condition ignored, Object data, int expected, ConditionOperationAvro operation) {
+        if (!(data instanceof MotionSensorAvro motion)) {
+            return false;
+        }
+        int motionVal = motion.getMotion() ? 1 : 0;
+        return compare(motionVal, expected, operation);
+    }
+
+    private boolean evaluateSwitch(Condition ignored, Object data, int expected, ConditionOperationAvro operation) {
+        if (!(data instanceof SwitchSensorAvro sw)) {
+            return false;
+        }
+        int stateVal = sw.getState() ? 1 : 0;
+        return compare(stateVal, expected, operation);
     }
 
     private boolean compare(int sensorValue, int expected, ConditionOperationAvro operation) {
@@ -153,18 +222,14 @@ public class SnapshotProcessor {
             String sensorId = sa.getSensor().getId();
 
             Integer rawValue = action.getValue();
-            int safeValue = (rawValue != null) ? rawValue : 0;
 
-            if (rawValue == null) {
-                log.debug("Действие {} для сенсора {} не содержит value, подставлено 0",
-                        action.getType(), sensorId);
+            DeviceActionProto.Builder actionBuilder = DeviceActionProto.newBuilder()
+                    .setSensorId(sensorId)
+                    .setType(mapToProto(action.getType()));
+            if (rawValue != null) {
+                actionBuilder.setValue(rawValue);
             }
-
-            DeviceActionProto grpcAction = DeviceActionProto.newBuilder()
-                    .setSensorId((sensorId))
-                    .setType(mapToProto(action.getType()))
-                    .setValue(safeValue)
-                    .build();
+            DeviceActionProto grpcAction = actionBuilder.build();
 
             DeviceActionRequest request = DeviceActionRequest.newBuilder()
                     .setHubId(hubId)
@@ -179,26 +244,20 @@ public class SnapshotProcessor {
             try {
                 hubRouterClient.handleDeviceAction(request);
                 log.info("Выполнено действие {} для сенсора {} (hubId={})",
-                        action.getType(), safeValue, hubId);
+                        action.getType(), sensorId, hubId);
             } catch (StatusRuntimeException e) {
                 log.error("Ошибка при вызове gRPC HubRouter: {}", e.getStatus(), e);
             }
         }
     }
 
-    private ActionTypeProto mapToProto(ActionTypeAvro actionTypeAvro){
-        switch (actionTypeAvro){
-            case INVERSE -> {
-                return ActionTypeProto.INVERSE;
-            } case ACTIVATE -> {
-                return ActionTypeProto.ACTIVATE;
-            } case DEACTIVATE -> {
-                return ActionTypeProto.DEACTIVATE;
-            } case SET_VALUE -> {
-                return ActionTypeProto.SET_VALUE;
-            }
-        }
-        return null;
+    private ActionTypeProto mapToProto(ActionTypeAvro actionTypeAvro) {
+        return switch (actionTypeAvro) {
+            case INVERSE -> ActionTypeProto.INVERSE;
+            case ACTIVATE -> ActionTypeProto.ACTIVATE;
+            case DEACTIVATE -> ActionTypeProto.DEACTIVATE;
+            case SET_VALUE -> ActionTypeProto.SET_VALUE;
+        };
     }
 
 }

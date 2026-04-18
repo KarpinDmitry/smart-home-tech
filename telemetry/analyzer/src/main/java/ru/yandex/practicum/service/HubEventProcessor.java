@@ -30,7 +30,6 @@ public class HubEventProcessor implements Runnable {
     private final ScenarioRepository scenarioRepository;
     private final ConditionRepository conditionRepository;
     private final ActionRepository actionRepository;
-
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
