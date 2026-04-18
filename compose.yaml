@@ -1,4 +1,14 @@
 services:
+  analyzer-db:
+    image: postgres:15
+    container_name: analyzer-db
+    restart: always
+    environment:
+      POSTGRES_DB: analyzer
+      POSTGRES_USER: analyzer_user
+      POSTGRES_PASSWORD: analyzer_pass
+    ports:
+      - "5433:5432"
   kafka:
     image: confluentinc/confluent-local:7.4.3
     hostname: kafka
