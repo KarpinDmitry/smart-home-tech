@@ -1,23 +1,43 @@
 package ru.yandex.practicum.collector.service;
 
-import ru.yandex.practicum.collector.dto.sensor.SensorEvent;
-import ru.yandex.practicum.collector.kafka.producer.KafkaEventProducer;
-import lombok.RequiredArgsConstructor;
-import ru.yandex.practicum.collector.mapper.SensorEventMapper;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.collector.kafka.KafkaEventProducer;
+import ru.yandex.practicum.collector.mapper.sensor.SensorEventHandler;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
-@Service
-@RequiredArgsConstructor
-public class SensorService {
-    private final static String TOPIC = "telemetry.sensors.v1";
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-    private final SensorEventMapper mapper;
+@Service
+public class SensorService {
+
+    private final static String TOPIC = "telemetry.sensors.v1";
+    private final Map<SensorEventProto.PayloadCase, SensorEventHandler> sensorEventHandlers;
     private final KafkaEventProducer producer;
 
-    public void handle(SensorEvent sensorEvent) {
-        SensorEventAvro sensorEventAvro = mapper.mapping(sensorEvent);
+    public SensorService(KafkaEventProducer producer, Set<SensorEventHandler> setSensorEventHandlers) {
+        this.producer = producer;
+        this.sensorEventHandlers = setSensorEventHandlers.stream()
+                .collect(Collectors.toMap(
+                        SensorEventHandler::getType,
+                        Function.identity()
+                ));
+    }
 
-        producer.send(TOPIC, sensorEvent.getHubId(), sensorEventAvro);
+    public void handle(SensorEventProto sensorEventProto) {
+        SensorEventHandler handler = sensorEventHandlers.get(sensorEventProto.getPayloadCase());
+
+        if (handler == null) {
+            throw new IllegalArgumentException(
+                    "Unknown payload: " + sensorEventProto.getPayloadCase()
+            );
+        }
+
+        SensorEventAvro sensorEventAvro = handler.handle(sensorEventProto);
+
+        producer.send(TOPIC, sensorEventAvro.getHubId(), sensorEventAvro);
     }
 }
