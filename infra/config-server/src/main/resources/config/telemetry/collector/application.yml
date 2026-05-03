@@ -6,5 +6,8 @@ kafka:
   bootstrap-servers: localhost:9092
 
 spring:
+  application:
+    name: collector
   main:
     web-application-type: none
+
