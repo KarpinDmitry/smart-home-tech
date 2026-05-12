@@ -37,7 +37,6 @@ public class WarehouseServiceImpl implements WarehouseService {
             ADDRESSES[new Random().nextInt(ADDRESSES.length)];
 
     private final WarehouseProductRepository productRepository;
-    private final WarehouseProductMapper productMapper;
     private final ShoppingStoreClient shoppingStoreClient;
 
     @Override
@@ -45,7 +44,7 @@ public class WarehouseServiceImpl implements WarehouseService {
         if (productRepository.existsById(request.getProductId())) {
             throw new SpecifiedProductAlreadyInWarehouseException(request.getProductId());
         }
-        productRepository.save(productMapper.toEntity(request));
+        productRepository.save(WarehouseProductMapper.toEntity(request));
     }
 
     @Override

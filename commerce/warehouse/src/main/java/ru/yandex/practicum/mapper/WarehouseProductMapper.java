@@ -1,13 +1,14 @@
 package ru.yandex.practicum.mapper;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.dto.NewProductInWarehouseRequest;
 import ru.yandex.practicum.model.WarehouseProduct;
 
-@Component
+@UtilityClass
 public class WarehouseProductMapper {
 
-    public WarehouseProduct toEntity(NewProductInWarehouseRequest request) {
+    public static WarehouseProduct toEntity(NewProductInWarehouseRequest request) {
         WarehouseProduct product = new WarehouseProduct();
         product.setProductId(request.getProductId());
         product.setFragile(Boolean.TRUE.equals(request.getFragile()));

@@ -23,14 +23,13 @@ import java.util.UUID;
 public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     private final ShoppingCartRepository shoppingCartRepository;
-    private final ShoppingCartMapper shoppingCartMapper;
     private final WarehouseClient warehouseClient;
 
     @Override
     public ShoppingCartDto getShoppingCart(String username) {
         validateUsername(username);
         ShoppingCart cart = getOrCreateCart(username);
-        return shoppingCartMapper.toDto(cart);
+        return ShoppingCartMapper.toDto(cart);
     }
 
     @Override
@@ -44,7 +43,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
         products.forEach((productId, quantity) ->
                 cart.getProducts().merge(productId, quantity, Long::sum));
-        return shoppingCartMapper.toDto(cart);
+        return ShoppingCartMapper.toDto(cart);
     }
 
     @Override
@@ -68,7 +67,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         }
 
         productIds.forEach(cart.getProducts()::remove);
-        return shoppingCartMapper.toDto(cart);
+        return ShoppingCartMapper.toDto(cart);
     }
 
     @Override
@@ -87,7 +86,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         checkAvailability(cart.getShoppingCartId(), proposed);
 
         cart.getProducts().put(productId, request.getNewQuantity());
-        return shoppingCartMapper.toDto(cart);
+        return ShoppingCartMapper.toDto(cart);
     }
 
     private void validateUsername(String username) {

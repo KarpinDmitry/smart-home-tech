@@ -1,20 +1,19 @@
 package ru.yandex.practicum.mapper;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.dto.PageProductDto;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.SortObject;
-import ru.yandex.practicum.enums.ProductState;
 import ru.yandex.practicum.model.Product;
 
 import java.util.List;
 
-@Component
+@UtilityClass
 public class ProductMapper {
 
-    public Product toProduct(ProductDto productDto){
+    public static Product toProduct(ProductDto productDto){
         Product product = new Product();
         product.setProductName(productDto.getProductName());
         product.setDescription(productDto.getDescription());
@@ -27,7 +26,7 @@ public class ProductMapper {
         return product;
     }
 
-    public void updateEntity(Product target, ProductDto source) {
+    public static void updateEntity(Product target, ProductDto source) {
         target.setProductName(source.getProductName());
         target.setDescription(source.getDescription());
         target.setImageSrc(source.getImageSrc());
@@ -37,7 +36,7 @@ public class ProductMapper {
         target.setProductCategory(source.getProductCategory());
     }
 
-    public ProductDto toDto(Product product) {
+    public static ProductDto toDto(Product product) {
         return ProductDto.builder()
                 .productId(product.getProductId())
                 .productName(product.getProductName())
@@ -50,7 +49,7 @@ public class ProductMapper {
                 .build();
     }
 
-    public SortObject toSortObject(Sort.Order order) {
+    public static SortObject toSortObject(Sort.Order order) {
         return SortObject.builder()
                 .direction(order.getDirection().name())
                 .property(order.getProperty())
@@ -60,13 +59,13 @@ public class ProductMapper {
                 .build();
     }
 
-    public PageProductDto toPageDto(Page<Product> page) {
+    public static PageProductDto toPageDto(Page<Product> page) {
         List<ProductDto> content = page.getContent().stream()
-                .map(this::toDto)
+                .map(ProductMapper::toDto)
                 .toList();
 
         List<SortObject> sort = page.getSort().stream()
-                .map(this::toSortObject)
+                .map(ProductMapper::toSortObject)
                 .toList();
 
         return PageProductDto.builder()

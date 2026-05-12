@@ -28,7 +28,6 @@ import java.util.UUID;
 public class ShoppingStoreServiceIml implements ShoppingStoreService{
 
     private final ProductRepository productRepository;
-    private final ProductMapper productMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -38,28 +37,28 @@ public class ShoppingStoreServiceIml implements ShoppingStoreService{
         Page<Product> productPage = productRepository
                 .findAllByProductCategoryAndProductState(category, ProductState.ACTIVE, pageable);
 
-        return productMapper.toPageDto(productPage);
+        return ProductMapper.toPageDto(productPage);
     }
 
     @Override
     public ProductDto createNewProduct(ProductDto productDto) {
-        Product product = productRepository.save(productMapper.toProduct(productDto));
-        return productMapper.toDto(product);
+        Product product = productRepository.save(ProductMapper.toProduct(productDto));
+        return ProductMapper.toDto(product);
     }
 
     @Override
     public ProductDto updateProduct(ProductDto productDto) {
         Product product = getProductOrThrow(productDto.getProductId());
 
-        productMapper.updateEntity(product, productDto);
+        ProductMapper.updateEntity(product, productDto);
 
-        return productMapper.toDto(product);
+        return ProductMapper.toDto(product);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ProductDto getProduct(UUID productId) {
-        return productMapper.toDto(getProductOrThrow(productId));
+        return ProductMapper.toDto(getProductOrThrow(productId));
     }
 
     @Override
