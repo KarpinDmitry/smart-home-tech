@@ -1,4 +1,14 @@
 services:
+  commerce-db:
+    image: postgres:15
+    container_name: commerce-db
+    restart: always
+    environment:
+      POSTGRES_DB: commerce
+      POSTGRES_USER: commerce_user
+      POSTGRES_PASSWORD: commerce_pass
+    ports:
+      - "5434:5432"
   analyzer-db:
     image: postgres:15
     container_name: analyzer-db

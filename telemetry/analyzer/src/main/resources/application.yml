@@ -1,5 +1,6 @@
 server:
   port: 8082
+
 grpc:
   client:
     hub-router:
@@ -7,7 +8,10 @@ grpc:
       enableKeepAlive: true
       keepAliveWithoutCalls: true
       negotiationType: plaintext
+
 spring:
+  application:
+    name: analyzer
   sql:
     init:
       mode: always
@@ -42,6 +46,7 @@ spring:
         linger.ms: 5
         batch.size: 16384
         buffer.memory: 33554432
+
 analyzer:
   topics:
     snapshots: telemetry.snapshots.v1
