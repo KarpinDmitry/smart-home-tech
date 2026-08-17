@@ -3,6 +3,7 @@ package ru.yandex.practicum.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.api.shoppingStore.ShoppingStoreOperations;
 import ru.yandex.practicum.dto.PageProductDto;
@@ -16,6 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/shopping-store")
 public class ShoppingStoreController implements ShoppingStoreOperations {
 
     private final ShoppingStoreService shoppingStoreService;

@@ -4,14 +4,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import ru.yandex.practicum.dto.AddProductToWarehouseRequest;
 import ru.yandex.practicum.dto.AddressDto;
+import ru.yandex.practicum.dto.AssemblyProductsForOrderRequest;
 import ru.yandex.practicum.dto.BookedProductsDto;
 import ru.yandex.practicum.dto.NewProductInWarehouseRequest;
+import ru.yandex.practicum.dto.ShippedToDeliveryRequest;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 
-@RequestMapping("/api/v1/warehouse")
+import java.util.Map;
+import java.util.UUID;
+
 public interface WarehouseOperations {
 
     @PutMapping
@@ -25,4 +28,13 @@ public interface WarehouseOperations {
 
     @GetMapping("/address")
     AddressDto getWarehouseAddress();
+
+    @PostMapping("/assembly")
+    BookedProductsDto assemblyProductsForOrder(@RequestBody AssemblyProductsForOrderRequest request);
+
+    @PostMapping("/shipped")
+    void shippedToDelivery(@RequestBody ShippedToDeliveryRequest request);
+
+    @PostMapping("/return")
+    void acceptReturn(@RequestBody Map<UUID, Long> products);
 }
