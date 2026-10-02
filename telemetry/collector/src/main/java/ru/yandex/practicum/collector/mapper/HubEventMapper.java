@@ -16,6 +16,7 @@ import java.util.List;
 
 @Component
 public class HubEventMapper {
+
     public HubEventAvro map(HubEvent event) {
         return HubEventAvro.newBuilder()
                 .setHubId(event.getHubId())
@@ -56,8 +57,8 @@ public class HubEventMapper {
     private ScenarioConditionAvro mapCondition(ScenarioCondition c) {
         return ScenarioConditionAvro.newBuilder()
                 .setSensorId(c.getSensorId())
-                .setType(ConditionTypeAvro.valueOf(c.getType().name()))
-                .setOperation(ConditionOperationAvro.valueOf(c.getOperation().name()))
+                .setType(c.getType() != null ? ConditionTypeAvro.valueOf(c.getType().name()) : null)
+                .setOperation(c.getOperation() != null ? ConditionOperationAvro.valueOf(c.getOperation().name()) : null)
                 .setValue(c.getValue())
                 .build();
     }
@@ -71,15 +72,15 @@ public class HubEventMapper {
     private DeviceActionAvro mapAction(DeviceAction a) {
         return DeviceActionAvro.newBuilder()
                 .setSensorId(a.getSensorId())
-                .setType(ActionTypeAvro.valueOf(a.getType().name()))
-                .setValue(a.getValue())
+                .setType(a.getType() != null ? ActionTypeAvro.valueOf(a.getType().name()) : null)
+                .setValue(a.getValue()) // Integer, допускает null
                 .build();
     }
 
     private DeviceAddedEventAvro mapDeviceAdded(DeviceAddedEvent e) {
         return DeviceAddedEventAvro.newBuilder()
                 .setId(e.getId())
-                .setType(mapDeviceType(e.getDeviceType()))
+                .setType(e.getDeviceType() != null ? mapDeviceType(e.getDeviceType()) : null)
                 .build();
     }
 
@@ -89,11 +90,12 @@ public class HubEventMapper {
                 .build();
     }
 
-    private Instant safeTimestamp(Instant instant) {
-        return instant != null ? instant : Instant.now();
-    }
-
     private DeviceTypeAvro mapDeviceType(DeviceType type) {
         return DeviceTypeAvro.valueOf(type.name());
+    }
+
+    /** Avro-поле timestamp объявлено как timestamp-millis → Instant. */
+    private Instant safeTimestamp(Instant instant) {
+        return instant != null ? instant : Instant.now();
     }
 }
