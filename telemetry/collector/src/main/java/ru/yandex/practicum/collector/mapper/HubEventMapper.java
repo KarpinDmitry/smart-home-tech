@@ -16,6 +16,7 @@ import java.util.List;
 
 @Component
 public class HubEventMapper {
+
     public HubEventAvro map(HubEvent event) {
         return HubEventAvro.newBuilder()
                 .setHubId(event.getHubId())
@@ -33,17 +34,17 @@ public class HubEventMapper {
         };
     }
 
-    private ScenarioRemovedEventAvro mapScenarioRemoved(ScenarioRemovedEvent e) {
+    private ScenarioRemovedEventAvro mapScenarioRemoved(ScenarioRemovedEvent scenarioRemovedEvent) {
         return ScenarioRemovedEventAvro.newBuilder()
-                .setName(e.getName())
+                .setName(scenarioRemovedEvent.getName())
                 .build();
     }
 
-    private ScenarioAddedEventAvro mapScenarioAdded(ScenarioAddedEvent e) {
+    private ScenarioAddedEventAvro mapScenarioAdded(ScenarioAddedEvent scenarioAddedEvente) {
         return ScenarioAddedEventAvro.newBuilder()
-                .setName(e.getName())
-                .setConditions(mapConditions(e.getConditions()))
-                .setActions(mapActions(e.getActions()))
+                .setName(scenarioAddedEvente.getName())
+                .setConditions(mapConditions(scenarioAddedEvente.getConditions()))
+                .setActions(mapActions(scenarioAddedEvente.getActions()))
                 .build();
     }
 
@@ -53,12 +54,12 @@ public class HubEventMapper {
                 .toList();
     }
 
-    private ScenarioConditionAvro mapCondition(ScenarioCondition c) {
+    private ScenarioConditionAvro mapCondition(ScenarioCondition scenarioCondition) {
         return ScenarioConditionAvro.newBuilder()
-                .setSensorId(c.getSensorId())
-                .setType(ConditionTypeAvro.valueOf(c.getType().name()))
-                .setOperation(ConditionOperationAvro.valueOf(c.getOperation().name()))
-                .setValue(c.getValue())
+                .setSensorId(scenarioCondition.getSensorId())
+                .setType(scenarioCondition.getType() != null ? ConditionTypeAvro.valueOf(scenarioCondition.getType().name()) : null)
+                .setOperation(scenarioCondition.getOperation() != null ? ConditionOperationAvro.valueOf(scenarioCondition.getOperation().name()) : null)
+                .setValue(scenarioCondition.getValue())
                 .build();
     }
 
@@ -68,32 +69,33 @@ public class HubEventMapper {
                 .toList();
     }
 
-    private DeviceActionAvro mapAction(DeviceAction a) {
+    private DeviceActionAvro mapAction(DeviceAction deviceAction) {
         return DeviceActionAvro.newBuilder()
-                .setSensorId(a.getSensorId())
-                .setType(ActionTypeAvro.valueOf(a.getType().name()))
-                .setValue(a.getValue())
+                .setSensorId(deviceAction.getSensorId())
+                .setType(deviceAction.getType() != null ? ActionTypeAvro.valueOf(deviceAction.getType().name()) : null)
+                .setValue(deviceAction.getValue()) // Integer, допускает null
                 .build();
     }
 
-    private DeviceAddedEventAvro mapDeviceAdded(DeviceAddedEvent e) {
+    private DeviceAddedEventAvro mapDeviceAdded(DeviceAddedEvent deviceAddedEvent) {
         return DeviceAddedEventAvro.newBuilder()
-                .setId(e.getId())
-                .setType(mapDeviceType(e.getDeviceType()))
+                .setId(deviceAddedEvent.getId())
+                .setType(deviceAddedEvent.getDeviceType() != null ? mapDeviceType(deviceAddedEvent.getDeviceType()) : null)
                 .build();
     }
 
-    private DeviceRemovedEventAvro mapDeviceRemoved(DeviceRemovedEvent e) {
+    private DeviceRemovedEventAvro mapDeviceRemoved(DeviceRemovedEvent deviceRemovedEvent) {
         return DeviceRemovedEventAvro.newBuilder()
-                .setId(e.getId())
+                .setId(deviceRemovedEvent.getId())
                 .build();
-    }
-
-    private Instant safeTimestamp(Instant instant) {
-        return instant != null ? instant : Instant.now();
     }
 
     private DeviceTypeAvro mapDeviceType(DeviceType type) {
         return DeviceTypeAvro.valueOf(type.name());
+    }
+
+    /** Avro-поле timestamp объявлено как timestamp-millis → Instant. */
+    private Instant safeTimestamp(Instant instant) {
+        return instant != null ? instant : Instant.now();
     }
 }

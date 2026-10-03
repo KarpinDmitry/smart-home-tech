@@ -8,31 +8,26 @@ import java.time.Instant;
 
 @Component
 public class SensorEventMapper {
+
     public SensorEventAvro mapping(SensorEvent sensorEvent) {
         if (sensorEvent == null) {
             return null;
         }
 
-        SensorEventAvro.Builder sensorEventAvro = SensorEventAvro.newBuilder()
+        return SensorEventAvro.newBuilder()
                 .setId(sensorEvent.getId())
                 .setHubId(sensorEvent.getHubId())
-                .setTimestamp(safeTimestamp(sensorEvent.getTimestamp()));
-
-        sensorEventAvro.setPayload(mapPayload(sensorEvent));
-
-        return sensorEventAvro.build();
+                .setTimestamp(safeTimestamp(sensorEvent.getTimestamp()))
+                .setPayload(mapPayload(sensorEvent))
+                .build();
     }
 
     private Object mapPayload(SensorEvent event) {
         return switch (event.getType()) {
             case LIGHT_SENSOR_EVENT -> mapLight((LightSensorEvent) event);
-
             case MOTION_SENSOR_EVENT -> mapMotion((MotionSensorEvent) event);
-
             case CLIMATE_SENSOR_EVENT -> mapClimate((ClimateSensorEvent) event);
-
             case SWITCH_SENSOR_EVENT -> mapSwitch((SwitchSensorEvent) event);
-
             case TEMPERATURE_SENSOR_EVENT -> mapTemperature((TemperatureSensorEvent) event);
         };
     }
@@ -46,17 +41,17 @@ public class SensorEventMapper {
 
     private MotionSensorAvro mapMotion(MotionSensorEvent event) {
         return MotionSensorAvro.newBuilder()
-                .setLinkQuality(event.getLinkQuality())
-                .setMotion(event.getMotion())
-                .setVoltage(event.getVoltage())
+                .setLinkQuality(safeInt(event.getLinkQuality()))
+                .setMotion(safeBoolean(event.getMotion()))
+                .setVoltage(safeInt(event.getVoltage()))
                 .build();
     }
 
     private ClimateSensorAvro mapClimate(ClimateSensorEvent event) {
         return ClimateSensorAvro.newBuilder()
-                .setCo2Level(event.getCo2Level())
-                .setHumidity(event.getHumidity())
-                .setTemperatureC(event.getTemperatureC())
+                .setCo2Level(safeInt(event.getCo2Level()))
+                .setHumidity(safeInt(event.getHumidity()))
+                .setTemperatureC(safeInt(event.getTemperatureC()))
                 .build();
     }
 
@@ -70,7 +65,7 @@ public class SensorEventMapper {
         return TemperatureSensorAvro.newBuilder()
                 .setId(event.getId())
                 .setHubId(event.getHubId())
-                .setTimestamp(event.getTimestamp())
+                .setTimestamp(safeTimestamp(event.getTimestamp()))
                 .setTemperatureC(safeInt(event.getTemperatureC()))
                 .setTemperatureF(safeInt(event.getTemperatureF()))
                 .build();
