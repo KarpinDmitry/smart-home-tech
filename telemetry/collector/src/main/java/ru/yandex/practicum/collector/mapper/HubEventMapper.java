@@ -34,17 +34,17 @@ public class HubEventMapper {
         };
     }
 
-    private ScenarioRemovedEventAvro mapScenarioRemoved(ScenarioRemovedEvent e) {
+    private ScenarioRemovedEventAvro mapScenarioRemoved(ScenarioRemovedEvent scenarioRemovedEvent) {
         return ScenarioRemovedEventAvro.newBuilder()
-                .setName(e.getName())
+                .setName(scenarioRemovedEvent.getName())
                 .build();
     }
 
-    private ScenarioAddedEventAvro mapScenarioAdded(ScenarioAddedEvent e) {
+    private ScenarioAddedEventAvro mapScenarioAdded(ScenarioAddedEvent scenarioAddedEvente) {
         return ScenarioAddedEventAvro.newBuilder()
-                .setName(e.getName())
-                .setConditions(mapConditions(e.getConditions()))
-                .setActions(mapActions(e.getActions()))
+                .setName(scenarioAddedEvente.getName())
+                .setConditions(mapConditions(scenarioAddedEvente.getConditions()))
+                .setActions(mapActions(scenarioAddedEvente.getActions()))
                 .build();
     }
 
@@ -54,12 +54,12 @@ public class HubEventMapper {
                 .toList();
     }
 
-    private ScenarioConditionAvro mapCondition(ScenarioCondition c) {
+    private ScenarioConditionAvro mapCondition(ScenarioCondition scenarioCondition) {
         return ScenarioConditionAvro.newBuilder()
-                .setSensorId(c.getSensorId())
-                .setType(c.getType() != null ? ConditionTypeAvro.valueOf(c.getType().name()) : null)
-                .setOperation(c.getOperation() != null ? ConditionOperationAvro.valueOf(c.getOperation().name()) : null)
-                .setValue(c.getValue())
+                .setSensorId(scenarioCondition.getSensorId())
+                .setType(scenarioCondition.getType() != null ? ConditionTypeAvro.valueOf(scenarioCondition.getType().name()) : null)
+                .setOperation(scenarioCondition.getOperation() != null ? ConditionOperationAvro.valueOf(scenarioCondition.getOperation().name()) : null)
+                .setValue(scenarioCondition.getValue())
                 .build();
     }
 
@@ -69,24 +69,24 @@ public class HubEventMapper {
                 .toList();
     }
 
-    private DeviceActionAvro mapAction(DeviceAction a) {
+    private DeviceActionAvro mapAction(DeviceAction deviceAction) {
         return DeviceActionAvro.newBuilder()
-                .setSensorId(a.getSensorId())
-                .setType(a.getType() != null ? ActionTypeAvro.valueOf(a.getType().name()) : null)
-                .setValue(a.getValue()) // Integer, допускает null
+                .setSensorId(deviceAction.getSensorId())
+                .setType(deviceAction.getType() != null ? ActionTypeAvro.valueOf(deviceAction.getType().name()) : null)
+                .setValue(deviceAction.getValue()) // Integer, допускает null
                 .build();
     }
 
-    private DeviceAddedEventAvro mapDeviceAdded(DeviceAddedEvent e) {
+    private DeviceAddedEventAvro mapDeviceAdded(DeviceAddedEvent deviceAddedEvent) {
         return DeviceAddedEventAvro.newBuilder()
-                .setId(e.getId())
-                .setType(e.getDeviceType() != null ? mapDeviceType(e.getDeviceType()) : null)
+                .setId(deviceAddedEvent.getId())
+                .setType(deviceAddedEvent.getDeviceType() != null ? mapDeviceType(deviceAddedEvent.getDeviceType()) : null)
                 .build();
     }
 
-    private DeviceRemovedEventAvro mapDeviceRemoved(DeviceRemovedEvent e) {
+    private DeviceRemovedEventAvro mapDeviceRemoved(DeviceRemovedEvent deviceRemovedEvent) {
         return DeviceRemovedEventAvro.newBuilder()
-                .setId(e.getId())
+                .setId(deviceRemovedEvent.getId())
                 .build();
     }
 
