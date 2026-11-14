@@ -8,34 +8,34 @@ import ru.yandex.practicum.model.DeliveryEntity;
 public class DeliveryMapper {
 
     public static DeliveryDto toDto(DeliveryEntity entity) {
-        DeliveryDto dto = new DeliveryDto();
-        dto.setDeliveryId(entity.getDeliveryId());
-        dto.setOrderId(entity.getOrderId());
-        dto.setDeliveryState(entity.getDeliveryState());
-        dto.setFromAddress(toAddressDto(entity.getFromAddress()));
-        dto.setToAddress(toAddressDto(entity.getToAddress()));
-        return dto;
+        DeliveryDto deliveryDto = new DeliveryDto();
+        deliveryDto.setDeliveryId(entity.getDeliveryId());
+        deliveryDto.setOrderId(entity.getOrderId());
+        deliveryDto.setDeliveryState(entity.getDeliveryState());
+        deliveryDto.setFromAddress(toAddressDto(entity.getFromAddress()));
+        deliveryDto.setToAddress(toAddressDto(entity.getToAddress()));
+        return deliveryDto;
     }
 
-    public static AddressEmbeddable toEmbeddable(AddressDto dto) {
-        if (dto == null) return null;
+    public static AddressEmbeddable toEmbeddable(AddressDto addressDto) {
+        if (addressDto == null) return null;
         AddressEmbeddable embeddable = new AddressEmbeddable();
-        embeddable.setCountry(dto.getCountry());
-        embeddable.setCity(dto.getCity());
-        embeddable.setStreet(dto.getStreet());
-        embeddable.setHouse(dto.getHouse());
-        embeddable.setFlat(dto.getFlat());
+        embeddable.setCountry(addressDto.getCountry());
+        embeddable.setCity(addressDto.getCity());
+        embeddable.setStreet(addressDto.getStreet());
+        embeddable.setHouse(addressDto.getHouse());
+        embeddable.setFlat(addressDto.getFlat());
         return embeddable;
     }
 
     public static AddressDto toAddressDto(AddressEmbeddable embeddable) {
         if (embeddable == null) return null;
-        AddressDto dto = new AddressDto();
-        dto.setCountry(embeddable.getCountry());
-        dto.setCity(embeddable.getCity());
-        dto.setStreet(embeddable.getStreet());
-        dto.setHouse(embeddable.getHouse());
-        dto.setFlat(embeddable.getFlat());
-        return dto;
+        AddressDto addressDto = new AddressDto();
+        addressDto.setCountry(embeddable.getCountry());
+        addressDto.setCity(embeddable.getCity());
+        addressDto.setStreet(embeddable.getStreet());
+        addressDto.setHouse(embeddable.getHouse());
+        addressDto.setFlat(embeddable.getFlat());
+        return addressDto;
     }
 }
